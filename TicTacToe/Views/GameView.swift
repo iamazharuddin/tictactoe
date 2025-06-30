@@ -7,26 +7,39 @@ struct GameView: View {
     var body: some View {
         VStack(spacing: 20) {
             if let game = viewModel.currentGame {
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("🆔 Game ID: \(viewModel.gameId ?? "-")")
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Game ID: \(viewModel.gameId ?? "Not available")")
                         .font(.caption)
                         .foregroundColor(.gray)
 
-                    Text("👤 You are: \(viewModel.userId)")
+                    Text("You are: \(viewModel.userId)")
                         .font(.subheadline)
 
-                    if viewModel.userId == game.playerX {
-                        Text("🎮 Your Role: X")
-                        Text("🤝 Opponent: \(game.playerO == "waiting" ? "Waiting..." : game.playerO)")
-                    } else if viewModel.userId == game.playerO {
-                        Text("🎮 Your Role: O")
-                        Text("🤝 Opponent: \(game.playerX)")
-                    }
+                    if let game = viewModel.currentGame {
+                        if viewModel.userId == game.playerX {
+                            Text("Your Role: X")
+                            Text("Opponent: \(game.playerO == "waiting" ? "Waiting..." : game.playerO)")
+                        } else if viewModel.userId == game.playerO {
+                            Text("Your Role: O")
+                            Text("Opponent: \(game.playerX)")
+                        } else {
+                            Text("You are not a player in this game.")
+                                .foregroundColor(.red)
+                        }
 
-                    Text(viewModel.currentGame?.moves.description ?? "")
+                        if !game.moves.isEmpty {
+                            Text("Moves: \(game.moves.count)")
+                                .font(.footnote)
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        Text("Game data not available.")
+                            .foregroundColor(.orange)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
+
             }
 
             if let winner = viewModel.winner {
@@ -55,7 +68,6 @@ struct GameView: View {
                                 .foregroundColor(.black)
                         }
                     }
-//                    .disabled(!viewModel.isMyTurn || viewModel.board[index] != "")
                 }
             }
 
