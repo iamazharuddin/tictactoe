@@ -8,6 +8,17 @@
 import FirebaseFirestore
 import Foundation
 
+enum GameJoinError: Error, LocalizedError {
+    case noAvailableGame
+    var errorDescription: String? {
+        switch self {
+        case .noAvailableGame:
+            return "No open games are available to join right now."
+        }
+    }
+}
+
+
 class GameService {
     private let db = Firestore.firestore()
 
@@ -29,8 +40,7 @@ class GameService {
     }
 
     func joinAvailableGame(userId: String) async throws -> String {
-        let snapshot = try await db.collection("game")
-            .getDocuments()
+        let snapshot = try await db.collection("game").getDocuments()
 
         for doc in snapshot.documents {
             let data = doc.data()
@@ -38,17 +48,18 @@ class GameService {
             let gameId = doc.documentID
 
             if playerX == userId {
-                print("Rejoining game previously created by user: \(gameId)")
+                print("Rejoining your own game: \(gameId)")
                 return gameId
             } else {
-                try await db.collection("game").document(gameId)
-                    .updateData(["playerO": userId])
+                try await db.collection("game").document(gameId).updateData([
+                    "playerO": userId
+                ])
                 print("Joined game as playerO: \(gameId)")
                 return gameId
             }
         }
 
-        throw NSError(domain: "", code: 404, userInfo: [NSLocalizedDescriptionKey: "No available games to join"])
+        throw GameJoinError.noAvailableGame
     }
 
 
@@ -82,7 +93,8 @@ class GameService {
         let ref = db.collection("game").document(gameId)
         try await ref.updateData([
             "moves": [],
-            "winner": NSNull()
+            "winner": NSNull(),
+            "currentTurn": "X"
         ])
     }
 }
