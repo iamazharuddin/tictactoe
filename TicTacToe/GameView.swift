@@ -6,7 +6,6 @@ struct GameView: View {
 
     var body: some View {
         VStack(spacing: 20) {
-            // MARK: - Game Info Section
             if let game = viewModel.currentGame {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("🆔 Game ID: \(viewModel.gameId ?? "-")")
@@ -23,12 +22,13 @@ struct GameView: View {
                         Text("🎮 Your Role: O")
                         Text("🤝 Opponent: \(game.playerX)")
                     }
+
+                    Text(viewModel.currentGame?.moves.description ?? "")
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal)
             }
 
-            // MARK: - Winner UI
             if let winner = viewModel.winner {
                 Text("\(winner) won! 🎉")
                     .font(.title)
@@ -40,7 +40,6 @@ struct GameView: View {
                 Task { await viewModel.resetGame() }
             }
 
-            // MARK: - Game Board
             LazyVGrid(columns: columns, spacing: 10) {
                 ForEach(0..<viewModel.board.count, id: \.self) { index in
                     Button {
@@ -60,7 +59,6 @@ struct GameView: View {
                 }
             }
 
-            // MARK: - Current Turn Info
             Text("Current Turn: \(viewModel.currentTurn)")
                 .font(.headline)
         }

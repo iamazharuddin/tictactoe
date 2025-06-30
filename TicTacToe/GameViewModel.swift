@@ -20,7 +20,7 @@ class GameViewModel: ObservableObject {
     @Published var currentGame: Game?
     private let gameService = GameService()
     private let boardSize = 3
-    var userId: String = "" // set after login
+    var userId: String = ""
 
     func createNewGame(playerId: String) async {
         userId = playerId
@@ -76,7 +76,6 @@ class GameViewModel: ObservableObject {
         let player = move.player
         let moves = Set(game.moves + [move])
 
-        // Track how many moves by this player per row/col
         var rowCounts = [Int](repeating: 0, count: size)
         var colCounts = [Int](repeating: 0, count: size)
         var diagCount = 0
@@ -98,7 +97,6 @@ class GameViewModel: ObservableObject {
 
         print(rowCounts, colCounts, diagCount, antiDiagCount)
 
-        // Check if any row, col, or diagonal is full
         if rowCounts.contains(size) || colCounts.contains(size) || diagCount == size || antiDiagCount == size {
             return player
         }
@@ -111,7 +109,6 @@ class GameViewModel: ObservableObject {
     var isMyTurn: Bool {
         guard let game = currentGame else { return false }
 
-        // Determine user's assigned letter
         let mySymbol: String
         if userId == game.playerX {
             mySymbol = "X"
