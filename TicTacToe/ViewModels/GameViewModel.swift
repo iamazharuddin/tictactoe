@@ -18,9 +18,13 @@ class GameViewModel: ObservableObject {
     @Published var currentTurn: String = "X"
     @Published var winner: String?
     @Published var currentGame: Game?
-    private let gameService = GameService()
+    private let gameService: GameServiceProtocol
     private let boardSize = 3
     var userId: String = ""
+
+    init(gameService:GameServiceProtocol) {
+        self.gameService = gameService
+    }
 
     func createNewGame(playerId: String) async {
         userId = playerId
@@ -40,15 +44,19 @@ class GameViewModel: ObservableObject {
 
     func listenToGame() {
         guard let id = gameId else { return }
-        gameService.listenToGame(gameId: id) { result in
+        gameService.listenToGame(gameId: id) { [weak self] result in
+            guard let self = self else { return }
             DispatchQueue.main.async {
                 switch result {
                 case .success(let game):
                     self.currentGame = game
+                    print("Moves: ", game.moves)
+                    print("Current Turn: \(game.currentTurn)")
                     self.board = Array(repeating: "", count: game.boardSize * game.boardSize)
                     for move in game.moves {
                         self.board[move.row * game.boardSize + move.col] = move.player
                     }
+                    print("Board: ", self.board)
                     self.currentTurn = game.currentTurn
                     self.winner = game.winner
                 case .failure(let error):
@@ -60,13 +68,22 @@ class GameViewModel: ObservableObject {
     
 
     func makeMove(at index: Int) async {
-        guard winner == nil, board[index] == "", isMyTurn else { return }
+        print("🟡 makeMove called at index: \(index)")
+
+        guard board[index] == "", isMyTurn else {
+            print("⛔️ Move rejected — board[\(index)] = '\(board[index])', isMyTurn = \(isMyTurn)")
+            return
+        }
+
         let row = index / boardSize
         let col = index % boardSize
         let move = Move(row: row, col: col, player: currentTurn)
+        print("✅ Making move for player: \(currentTurn), row: \(row), col: \(col)")
+
         try? await gameService.makeMove(gameId: gameId!, move: move)
+
         if let winner = checkWinner(game: currentGame!, move: move) {
-            print("winner = \(winner), moves = \(currentGame!.moves)")
+            print("🎉 Winner = \(winner), moves = \(currentGame!.moves)")
             try? await gameService.declareWinner(gameId: gameId ?? "", winner: winner)
         }
     }
@@ -107,7 +124,10 @@ class GameViewModel: ObservableObject {
 
 
     var isMyTurn: Bool {
-        guard let game = currentGame else { return false }
+        guard let game = currentGame else {
+            print("❌ isMyTurn: currentGame is nil")
+            return false
+        }
 
         let mySymbol: String
         if userId == game.playerX {
@@ -115,11 +135,15 @@ class GameViewModel: ObservableObject {
         } else if userId == game.playerO {
             mySymbol = "O"
         } else {
+            print("❌ isMyTurn: userId \(userId) not in game")
             return false
         }
 
-        return game.currentTurn == mySymbol
+        let result = game.currentTurn == mySymbol
+        print("🧩 isMyTurn: userId=\(userId), mySymbol=\(mySymbol), game.currentTurn=\(game.currentTurn), result=\(result)")
+        return result
     }
+
 
 
     func resetGame() async {

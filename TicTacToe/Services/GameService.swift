@@ -8,6 +8,17 @@
 import FirebaseFirestore
 import Foundation
 
+
+protocol GameServiceProtocol {
+    func createGame(playerX: String, playerO: String) async throws -> String
+    func joinAvailableGame(userId: String) async throws -> String
+    func listenToGame(gameId: String, completion: @escaping (Result<Game, Error>) -> Void)
+    func makeMove(gameId: String, move: Move) async throws
+    func declareWinner(gameId: String, winner: String) async throws
+    func reset(gameId: String) async throws
+}
+
+
 enum GameJoinError: Error, LocalizedError {
     case noAvailableGame
     var errorDescription: String? {
@@ -19,7 +30,7 @@ enum GameJoinError: Error, LocalizedError {
 }
 
 
-class GameService {
+class GameService: GameServiceProtocol {
     private let db = Firestore.firestore()
 
     func createGame(playerX: String, playerO: String) async throws -> String {

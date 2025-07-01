@@ -17,11 +17,11 @@ struct Move: Codable, Identifiable, Hashable {
 
 struct Game: Codable, Identifiable {
     @DocumentID var id: String?
-    let boardSize: Int
-    let playerX: String
-    let playerO: String
-    let moves: [Move]
-    let winner: String?
-    let currentTurn: String
+    var boardSize: Int
+    var playerX: String
+    var playerO: String
+    var moves: [Move]
+    var winner: String?
+    var currentTurn: String
 }
 

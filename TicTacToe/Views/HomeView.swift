@@ -9,9 +9,9 @@ import SwiftUI
 import FirebaseFirestore
 import Combine
 
-struct Home: View {
+struct HomeView: View {
     @StateObject var appVM = AppViewModel()
-    @StateObject var gameVM = GameViewModel()
+    @StateObject var gameVM = GameViewModel(gameService: GameService())
 
     var body: some View {
         VStack {
@@ -41,7 +41,9 @@ struct Home: View {
     }
 }
 
-
+#Preview {
+     HomeView()
+}
 
 /*
 
