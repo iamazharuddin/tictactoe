@@ -7,7 +7,7 @@
 
 import FirebaseFirestore
 import Foundation
-
+import FirebaseFirestoreCombineSwift
 
 protocol GameServiceProtocol {
     func createGame(playerX: String, playerO: String) async throws -> String
@@ -47,6 +47,7 @@ class GameService: GameServiceProtocol {
         ]
 
         let ref = try await db.collection("game").addDocument(data: gameData)
+        // let ref = try await db.collection("game").document("gameId").setData(gameData)
         return ref.documentID
     }
 
